@@ -68,3 +68,25 @@ def triage_invoke(body: TriageInput):
     issue = classify_issue({"ticket_text": text})
     reply = reply_draft({"ticket_text": text, "order": order, "issue_type": issue["issue_type"]})
     return {"order_id": order_id, "issue_type": issue["issue_type"], "order": order, "reply_text": reply["reply_text"]}
+
+def respond_node(state):
+    """Return a final human-readable response to the user."""
+    
+    if "final_answer" in state:
+        return {"output": state["final_answer"]}
+
+    if "order_id" in state:
+        order = get_order_by_id(state["order_id"])
+        if order:
+            msg = (
+                f"Order ID: {order.id}\n"
+                f"Product: {order.product_name}\n"
+                f"Status: {order.status}\n"
+                f"Price: ${order.price}\n"
+                f"Customer: {order.customer_name}"
+            )
+        else:
+            msg = "Sorry, that order ID was not found."
+        return {"output": msg}
+
+    return {"output": "I could not determine your intent."}
